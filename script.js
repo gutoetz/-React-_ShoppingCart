@@ -1,3 +1,5 @@
+const cartList = document.querySelector('.cart__items');
+
 const createProductImageElement = (imageSource) => {
   const img = document.createElement('img');
   img.className = 'item__image';
@@ -27,7 +29,8 @@ const createProductItemElement = ({ sku, name, image }) => {
 const getSkuFromProductItem = (item) => item.querySelector('span.item__sku').innerText;
 
 const cartItemClickListener = (event) => {
-  // coloque seu código aqui
+  cartList.removeChild(event.target);
+  saveCartItems(cartList.innerHTML);
 };
 
 const createCartItemElement = ({ sku, name, salePrice }) => {
@@ -38,4 +41,44 @@ const createCartItemElement = ({ sku, name, salePrice }) => {
   return li;
 };
 
-window.onload = () => { };
+const adicionandoNoCart = async (event) => {
+  const identador = event.target.parentNode.firstChild.innerHTML;
+  const item = await fetchItem(identador);
+  const { id, title, price } = item;
+  const newItem = createCartItemElement({ sku: id, name: title, salePrice: price });
+  cartList.appendChild(newItem);
+  saveCartItems(cartList.innerHTML);
+};
+
+const adicionandolisteners = () => {
+  const botoes = document.querySelectorAll('.item__add');
+  botoes.forEach((butao) => {
+    butao.addEventListener('click', adicionandoNoCart);
+  });
+};
+
+const requisitaProdutos = async () => {
+  const produtos = await fetchProducts('computador');
+  const documentTemporario = document.createDocumentFragment();
+  const capturando = document.querySelector('.items');
+  produtos.forEach((product) => {
+    const { id, title, thumbnail } = product;
+    const item = createProductItemElement({ sku: id, name: title, image: thumbnail });
+    documentTemporario.appendChild(item);
+  });
+  capturando.appendChild(documentTemporario);
+  adicionandolisteners();
+};
+
+const addingListenersSaved = () => {
+  const newLi = document.querySelectorAll('.cart__item');
+  newLi.forEach((element) => {
+    element.addEventListener('click', cartItemClickListener);
+  });
+};
+
+window.onload = () => {
+  requisitaProdutos();
+  getSavedCartItems();
+  addingListenersSaved();
+};
