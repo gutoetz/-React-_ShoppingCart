@@ -1,4 +1,38 @@
 const cartList = document.querySelector('.cart__items');
+const valorCart = document.querySelector('.total-price');
+let ValorTotal = 0;
+const botao = document.querySelector('.empty-cart');
+const container = document.querySelector('.items');
+const classItem = '.cart__item';
+
+const criandoCarregamento = () => {
+  const carregando = document.createElement('span');
+  carregando.innerHTML = 'carregando...';
+  carregando.classList = 'loading';
+  container.appendChild(carregando);
+};
+ const tirandoCarregamento = () => {
+  const carregando = document.querySelector('.loading');
+  container.removeChild(carregando);
+ };
+const currency = function (number) {
+  return new Intl.NumberFormat('en-IN', 
+  { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(number);
+};
+
+const somandoValores = (() => {
+  ValorTotal = 0;
+  const cartItems = document.querySelectorAll(classItem);
+  cartItems.forEach((element) => {
+    for (let i = 0; i < element.innerHTML.length; i += 1) {
+      if (element.innerHTML[i] === '$') {
+       const valor = element.innerHTML.slice(i + 1);
+       ValorTotal += Number(valor); 
+      }
+    }
+  });
+  valorCart.innerHTML = `Valor total: ${currency(ValorTotal)}`; 
+});
 
 const createProductImageElement = (imageSource) => {
   const img = document.createElement('img');
@@ -26,11 +60,10 @@ const createProductItemElement = ({ sku, name, image }) => {
   return section;
 };
 
-const getSkuFromProductItem = (item) => item.querySelector('span.item__sku').innerText;
-
 const cartItemClickListener = (event) => {
   cartList.removeChild(event.target);
   saveCartItems(cartList.innerHTML);
+  somandoValores();
 };
 
 const createCartItemElement = ({ sku, name, salePrice }) => {
@@ -48,6 +81,7 @@ const adicionandoNoCart = async (event) => {
   const newItem = createCartItemElement({ sku: id, name: title, salePrice: price });
   cartList.appendChild(newItem);
   saveCartItems(cartList.innerHTML);
+  somandoValores();
 };
 
 const adicionandolisteners = () => {
@@ -58,9 +92,11 @@ const adicionandolisteners = () => {
 };
 
 const requisitaProdutos = async () => {
+  criandoCarregamento();
   const produtos = await fetchProducts('computador');
   const documentTemporario = document.createDocumentFragment();
   const capturando = document.querySelector('.items');
+  tirandoCarregamento();
   produtos.forEach((product) => {
     const { id, title, thumbnail } = product;
     const item = createProductItemElement({ sku: id, name: title, image: thumbnail });
@@ -71,14 +107,26 @@ const requisitaProdutos = async () => {
 };
 
 const addingListenersSaved = () => {
-  const newLi = document.querySelectorAll('.cart__item');
+  const newLi = document.querySelectorAll(classItem);
   newLi.forEach((element) => {
     element.addEventListener('click', cartItemClickListener);
   });
 };
 
+const limpandoCarrinho = () => {
+  const cartItems = document.querySelectorAll(classItem);
+  cartItems.forEach((element) => {
+    cartList.removeChild(element);
+  });
+  somandoValores();
+  saveCartItems(cartList.innerHTML);
+};
+
+botao.addEventListener('click', limpandoCarrinho);
+
 window.onload = () => {
   requisitaProdutos();
-  getSavedCartItems();
+  cartList.innerHTML = getSavedCartItems();
   addingListenersSaved();
+  somandoValores();
 };
