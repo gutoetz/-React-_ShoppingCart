@@ -12,13 +12,9 @@ const criandoCarregamento = () => {
   container.appendChild(carregando);
 };
  const tirandoCarregamento = () => {
-  const carregando = document.querySelector('.loading');
-  container.removeChild(carregando);
+  const load = document.querySelector('.loading');
+  container.removeChild(load);
  };
-const currency = function (number) {
-  return new Intl.NumberFormat('en-IN', 
-  { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(number);
-};
 
 const somandoValores = (() => {
   ValorTotal = 0;
@@ -31,7 +27,7 @@ const somandoValores = (() => {
       }
     }
   });
-  valorCart.innerHTML = `Valor total: ${currency(ValorTotal)}`; 
+  valorCart.innerHTML = Math.round((ValorTotal + Number.EPSILON) * 100) / 100; 
 });
 
 const createProductImageElement = (imageSource) => {
@@ -94,9 +90,9 @@ const adicionandolisteners = () => {
 const requisitaProdutos = async () => {
   criandoCarregamento();
   const produtos = await fetchProducts('computador');
+  tirandoCarregamento();
   const documentTemporario = document.createDocumentFragment();
   const capturando = document.querySelector('.items');
-  tirandoCarregamento();
   produtos.forEach((product) => {
     const { id, title, thumbnail } = product;
     const item = createProductItemElement({ sku: id, name: title, image: thumbnail });
