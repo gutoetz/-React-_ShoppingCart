@@ -12,7 +12,7 @@ body {
 .price {
   display: flex;
 }
-
+ 
 .header {
   position: relative;
   background-color: rgb(3, 52, 45);
